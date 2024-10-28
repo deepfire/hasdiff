@@ -14,3 +14,4 @@ shell: cls
 	nix develop
 prof-shell: cls
 	nix develop .#profiling
+
