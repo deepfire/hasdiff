@@ -1,51 +1,48 @@
-{-# OPTIONS_GHC -Wno-unused-do-bind #-}
-{-# LANGUAGE DataKinds          #-}
-{-# LANGUAGE DeriveGeneric      #-}
-{-# LANGUAGE FlexibleInstances  #-}
-{-# LANGUAGE MonoLocalBinds     #-}
+{-# OPTIONS_GHC -Wno-unused-do-bind -Wno-unused-matches #-}
+{-# LANGUAGE LambdaCase         #-}
 {-# LANGUAGE OverloadedStrings  #-}
-{-# LANGUAGE RecordWildCards    #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TypeOperators      #-}
+-- depends on (as per the cabal file):
+-- , async
+-- , reflex
+-- , reflex-vty
+-- , text
+-- , transformers
+-- , unagi-chan
+-- , vty
 
 module Main where
 
-import Control.Monad.Trans.Except
-import Options.Generic
+import Control.Monad.IO.Class (liftIO)
+import Control.Concurrent (threadDelay)
+import Control.Concurrent.Async           qualified as Async
+import Control.Concurrent.Chan.Unagi (newChan, readChan, writeChan)
+import Control.Monad (forever)
+import Data.Text (pack)
 
-import Data.Basis
+import Graphics.Vty                       qualified as V
+import Reflex hiding (Request)
+import Reflex.Vty hiding (Request)
 
-import Data.HasDiff
-import TopHandler
-
-
-data DiffFiles = DiffFiles FilePath FilePath
-  deriving (Generic, Show)
-
-data Command w =
-  Diff
-  { cdOrigin   :: w ::: FilePath <?> "Origin file"
-  , cdModified :: w ::: FilePath <?> "Modified file"
-  }
-  deriving (Generic)
-
-instance ParseRecord (Command Wrapped)
-deriving instance Show (Command Unwrapped)
 
 main :: IO ()
-main = toplevelExceptionHandler $ do
-  cmd <- unwrapRecord "hasdiff"
-  orDie renderError (runCommand cmd)
+main = do
+  (w, r) <- liftIO newChan
+  liftIO . (Async.link =<<) . Async.async $ forever $ do
+    -- comment the threadDelay out to get a memory instahog
+    threadDelay 1
+    writeChan w =<< pure (0 :: Int)
 
-data Error = Error (Command Unwrapped) Text
-
-renderError :: Error -> Text
-renderError (Error cmd err) =
-  "ERROR: While executing operation:\n\n    '" <> showT cmd <> "'\n\n  " <> err
-
-runCommand :: Command Unwrapped -> ExceptT Error IO ()
-runCommand cmd@(Diff{cdOrigin, cdModified})  =
-  (,) <$> withExceptT (Error cmd) ((cdOrigin,)   <$> mapFile cdOrigin)
-      <*> withExceptT (Error cmd) ((cdModified,) <$> mapFile cdModified)
-    >>= le . uncurry runDiff
- where le = withExceptT (Error cmd)
+  liftIO $ mainWidget $ initManager_ $ do
+    setupE <- getPostBuild
+    inp <- input
+    sE <- performEventAsync $
+           ffor setupE $
+             \() fire -> liftIO . (Async.link =<<) . Async.async $ forever $
+               readChan r >>= fire
+    sB <- current <$> holdDyn 0 sE
+    col $ grout (fixed 17) $ do
+      boxTitle (constant doubleBoxStyle) "" $
+        grout (fixed 1) $ text (pack . show <$> sB)
+    pure $ fforMaybe inp $ \case
+      V.EvKey (V.KChar 'c') [V.MCtrl] -> Just ()
+      _ -> Nothing

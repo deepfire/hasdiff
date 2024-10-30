@@ -38,18 +38,3 @@ if impl(ghc >= 9.8)
       *:base
     , *:primitive
     , *:template-haskell
-
-source-repository-package
-  type: git
-  location: https://github.com/giorgidze/set-monad.git
-  ref: master
-  tag: 45378d24a0e8753b9ad1ef0ff6095612eb774c55
-  --sha256: sha256-SmLPTIAyi4TUvukA0atUYUcD9Y6b4pPopnK2q7G7li0
-
-source-repository-package
-  type: git
-  location: git://localhost/hcaf-reflex-vty
-  subdir: hcaf
-  ref: master
-  tag: a4cd03d6a2fb9f2d15da2dc47abc048479e96008
-  --sha256: sha256-4hNMdl2rxbKEH+YgD2G2xTpsvdw/pENkCUBWAZ52iao

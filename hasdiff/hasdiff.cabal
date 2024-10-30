@@ -21,83 +21,7 @@ build-type:         Simple
 -- Extra doc files to be distributed with the package, such as a CHANGELOG or a README.
 extra-doc-files:    CHANGELOG.md
 
-common options-and-extensions
-    ghc-options: -Wall
-    default-extensions:
-        AllowAmbiguousTypes
-        BangPatterns
-        BlockArguments
-        ConstraintKinds
-        DataKinds
-        DeriveFunctor
-        DeriveGeneric
-        DeriveTraversable
-        DerivingVia
-        DuplicateRecordFields
-        EmptyCase
-        ExplicitNamespaces
-        FlexibleContexts
-        FlexibleInstances
-        GADTs
-        GeneralisedNewtypeDeriving
-        ImportQualifiedPost
-        KindSignatures
-        LambdaCase
-        MultiParamTypeClasses
-        MultiWayIf
-        NamedFieldPuns
-        NoMonomorphismRestriction
-        OverloadedLabels
-        OverloadedStrings
-        PackageImports
-        PartialTypeSignatures
-        PatternSynonyms
-        QuantifiedConstraints
-        RankNTypes
-        RecordWildCards
-        RecursiveDo
-        ScopedTypeVariables
-        StandaloneDeriving
-        TupleSections
-        TypeApplications
-        TypeFamilies
-        TypeOperators
-        TypeSynonymInstances
-        UndecidableInstances
-        UndecidableSuperClasses
-        ViewPatterns
-
-library
-    import:           options-and-extensions
-    default-language: GHC2021
-    hs-source-dirs:   lib
-
-    exposed-modules:
-                       Data.HasDiff
-                       Data.Resources
-
-    build-depends:
-        base
-
-      , async
-      , containers
-      , hcaf
-      , mmap
-      , optparse-generic
-      , quiet
-      , reflex
-      , reflex-vty
-      , text
-      , time
-      , transformers
-      , transformers-except
-      , unagi-chan
-      , unix
-      , vty
-      , xxhash-ffi
-
 executable hasdiff
-    import:           options-and-extensions
     default-language: GHC2021
     ghc-options:      -threaded -with-rtsopts=-T
     hs-source-dirs:   app
@@ -106,8 +30,10 @@ executable hasdiff
     build-depends:
         base
 
-      , hasdiff
-      , hcaf
-      , optparse-generic
+      , async
+      , reflex
+      , reflex-vty
+      , text
       , transformers
-      , transformers-except
+      , unagi-chan
+      , vty
